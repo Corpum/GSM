@@ -14,6 +14,7 @@ class Week():
         self.computeHours(self.budget)
         self.setMaxHours()
         self.buildSkeleton()
+        self.fillSkeleton()
     
     def computeHours(self, weekbudget):
         ''' Generate an daily hour budget based on the amount of hours available in a week.
@@ -63,27 +64,50 @@ class Week():
         for day in self.weekplan.keys():
             self.schedule[day] = {}
             for ms in [845, 1100, 1330]:
-                cashier = self.queryDatabase(day, 1)
-                if cashier == 'None':
-                    cashier = self.queryDatabase(day, 3)
-                self.schedule[day][ms] = cashier
-                self.updateHours(cashier, 7.5, day)
+                self.scheduleworker(ms, day, 1, 7.5)
             for ms in [915]:
-                sorter = self.queryDatabase(day, 2)
-                if sorter == 'None':
-                    sorter = self.queryDatabase(day, 3)
-                self.schedule[day][ms] = sorter
-                self.updateHours(sorter, 7.5, day)
+                self.scheduleworker(ms, day, 2, 7.5)
             for ms in [845, 1330]:
-                manager = self.queryDatabase(day, 0)
-                self.schedule[day][ms] += manager
-                self.updateHours(manager, 7.5, day)
+                self.scheduleworker(ms, day, 0, 7.5)
+                
+    def fillSkeleton(self):
+        ''' Fills up the rest of a schedule'''
+        for ss in [1330, 1100]:
+            for day in self.schedule.keys():
+                self.scheduleworker(ss, day, 2, 7.5)
+        for ss in [1630, '1100B']:
+            for day in self.schedule.keys():
+                self.scheduleworker(ss, day, 0, 5, position = 3, check = '!=')
+    
+    def scheduleworker(self, shift, day, _type, hoursneeded, position = 'None', check = '='):
+        ''' Does the dry work of scheduling an employee and updating their hours.'''
+        worker = self.queryDatabase(day, _type, hoursneeded, position = position, check = check)
+        if worker == None:
+            self.queryDatabase(day, 3)
+        try:    
+            self.schedule[day][shift] += worker
+        except KeyError:
+            self.schedule[day][shift] = worker    
+        self.updateHours(worker, hoursneeded, day)
+        
             
-    def queryDatabase(self, day, _type, hoursneeded = 7.5):
+    def queryDatabase(self, day, _type, hoursneeded = 7.5, position = 'None', check = '='):
         '''Runs a query on database and returns a result'''
-        query = 'SELECT name FROM employees where %s = 1 and type = %s and hours <= maxhours - %s' % (day, _type, hoursneeded) 
+        if position == 'None':
+            query = 'SELECT name FROM employees where %s = 1 and type %s %s and hours <= maxhours - %s' % (day, check, _type, hoursneeded) 
+        else:
+            query = 'SELECT name FROM employees WHERE %s = 1 and type %s %s and hours <= maxhours - %s and position = %s' % (day, check, _type, hoursneeded, position)      
         cur.execute(query)
         available = cur.fetchall()
+        if len(available) == 0:
+            if position == 'None':
+                query = 'SELECT name FROM employees where %s = 1 and type %s %s and hours <= maxhours - %s' % (day, check, '3', hoursneeded)
+                cur.execute(query)
+                available = cur.fetchall()
+            else:
+                query = 'SELECT name FROM employees WHERE %s = 1 and type %s %s and hours <= maxhours - %s and position = %s' % (day, check, '3', hoursneeded, position)
+                cur.execute(query)
+                available = cur.fetchall()  
         try:
             worker = random.choice(available)
             worker = re.sub('[(),]', '', str(worker))
@@ -93,7 +117,10 @@ class Week():
 
     def updateHours(self, worker, hoursworked, day):
         ''' Adds hours to employee. Temporarily writes to database.'''
-        query = 'UPDATE employees SET hours = hours + %s WHERE name = %s' % (hoursworked, worker)
-        cur.execute(query)
-        query = 'UPDATE employees set %s = 0 WHERE name = %s' % (day, worker)
-        cur.execute(query)
+        try:
+            query = 'UPDATE employees SET hours = hours + %s WHERE name = %s' % (hoursworked, worker)
+            cur.execute(query)
+            query = 'UPDATE employees set %s = 0 WHERE name = %s' % (day, worker)
+            cur.execute(query)
+        except:
+            pass
