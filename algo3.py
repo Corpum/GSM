@@ -22,10 +22,10 @@ class Week():
         self.weekplan = {}
         self.daybudget = (weekbudget-15)//7
         for day in ('sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'):
-            if day in ('sunday', 'monday'):
-                self.weekplan[day] = self.daybudget + 7.5
+            if day in ('sunday', 'saturday'):
+                self.weekplan[day] = [self.daybudget + 7.5, 0]
             else:
-                self.weekplan[day] = self.daybudget
+                self.weekplan[day] = [self.daybudget, 0]
         return self.weekplan
     
     def setMaxHours(self):
@@ -61,7 +61,7 @@ class Week():
     def buildSkeleton(self):
         ''' Fills in fundamental shifts'''
         self.schedule = {}
-        for day in self.weekplan.keys():
+        for day in [i for i in self.weekplan.keys() if self.weekplan[i][-1] <= self.weekplan[i][0] - 7.5]:
             self.schedule[day] = {}
             for ms in [845, 1100, 1330]:
                 self.scheduleworker(ms, day, 1, 7.5)
@@ -73,10 +73,10 @@ class Week():
     def fillSkeleton(self):
         ''' Fills up the rest of a schedule'''
         for ss in [1330, 1100]:
-            for day in self.schedule.keys():
-                self.scheduleworker(ss, day, 2, 7.5)
+            for day in [i for i in self.weekplan.keys() if self.weekplan[i][-1] <= self.weekplan[i][0] - 7.5]:
+                self.scheduleworker(ss, day, 0, 7.5, check = '!=')
         for ss in [1630, '1100B']:
-            for day in self.schedule.keys():
+            for day in [i for i in self.weekplan.keys() if self.weekplan[i][-1] <= self.weekplan[i][0] - 5]:
                 self.scheduleworker(ss, day, 0, 5, position = 3, check = '!=')
     
     def scheduleworker(self, shift, day, _type, hoursneeded, position = 'None', check = '='):
@@ -122,5 +122,10 @@ class Week():
             cur.execute(query)
             query = 'UPDATE employees set %s = 0 WHERE name = %s' % (day, worker)
             cur.execute(query)
+            x = True
         except:
-            pass
+            x = False
+            
+        if x == True:
+            self.weekplan[day][-1] += hoursworked
+            
