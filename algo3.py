@@ -15,6 +15,10 @@ class Week():
         self.setMaxHours()
         self.buildSkeleton()
         self.fillSkeleton()
+        #self.fitWeekplan()
+        self.buffSchedule()
+        for i in self.weekplan.keys():
+            print(i, self.schedule[i])
     
     def computeHours(self, weekbudget):
         ''' Generate an daily hour budget based on the amount of hours available in a week.
@@ -32,7 +36,7 @@ class Week():
         ''' Sets the max hours of every employee. Does not save to database.'''
         fts = []
         pts = []
-        cur.execute('UPDATE employees SET maxhours = 40 WHERE position = 0')
+        cur.execute('UPDATE employees SET maxhours = 37.5 WHERE position = 0')
         cur.execute('UPDATE employees SET maxhours = 37.5 WHERE position > 0 and position < 3')
         cur.execute('SELECT name FROM employees WHERE position = 0')
         for i in cur.fetchall():
@@ -84,12 +88,29 @@ class Week():
         worker = self.queryDatabase(day, _type, hoursneeded, position = position, check = check)
         if worker == None:
             self.queryDatabase(day, 3)
-        try:    
-            self.schedule[day][shift] += worker
+        try:
+            if worker != 'None':
+                self.schedule[day][shift] += worker
+            else: pass
         except KeyError:
-            self.schedule[day][shift] = worker    
+            if worker != 'None':
+                self.schedule[day][shift] = worker 
+            else: pass
         self.updateHours(worker, hoursneeded, day)
         
+    def fitWeekplan(self):
+        self.extrahours = 0
+        for day in self.weekplan.keys():
+            self.extrahours += self.weekplan[day][0] - self.weekplan[day][1]
+            self.weekplan[day][0] = self.weekplan[day][1] 
+    
+    def buffSchedule(self):
+        for ss in [1200, 1200, 1200]:
+            for day in self.weekplan.keys():
+                self.scheduleworker(ss, day, 0, 7.5, check = '!=')
+        for ss in [1500, 1500, 1500]:
+            for day in self.weekplan.keys():
+                self.scheduleworker(ss, day, 0, 5, position = 3, check = '!=')
             
     def queryDatabase(self, day, _type, hoursneeded = 7.5, position = 'None', check = '='):
         '''Runs a query on database and returns a result'''
@@ -128,4 +149,5 @@ class Week():
             
         if x == True:
             self.weekplan[day][-1] += hoursworked
+            self.budget -= hoursworked
             
