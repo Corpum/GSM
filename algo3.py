@@ -67,19 +67,19 @@ class Week():
         self.schedule = {}
         for day in [i for i in self.weekplan.keys() if self.weekplan[i][-1] <= self.weekplan[i][0] - 7.5]:
             self.schedule[day] = {}
-            for ms in [845, 1100, 1330]:
+            for ms in [('8:45', '4:45', 7.5),('11:00', '7:00', 7.5), ('1:30','9:30', 7.5)]:
                 self.scheduleworker(ms, day, 1, 7.5)
-            for ms in [915]:
+            for ms in [('9:15','5:15', 7.5)]:
                 self.scheduleworker(ms, day, 2, 7.5)
-            for ms in [845, 1330]:
+            for ms in [('8:45', '4:45', 7.5),('1:30', '9:30', 7.5)]:
                 self.scheduleworker(ms, day, 0, 7.5)
                 
     def fillSkeleton(self):
         ''' Fills up the rest of a schedule'''
-        for ss in [1330, 1100]:
+        for ss in [('1:30', '9:30', 7.5), ('11:00', '7:00', 7.5)]:
             for day in [i for i in self.weekplan.keys() if self.weekplan[i][-1] <= self.weekplan[i][0] - 7.5]:
                 self.scheduleworker(ss, day, 0, 7.5, check = '!=')
-        for ss in [1630, '1100B']:
+        for ss in [('16:30', '9:30', 5), ('11:00', '4:00', 5)]:
             for day in [i for i in self.weekplan.keys() if self.weekplan[i][-1] <= self.weekplan[i][0] - 5]:
                 self.scheduleworker(ss, day, 0, 5, position = 3, check = '!=')
     
@@ -116,10 +116,10 @@ class Week():
             self.weekplan[day][0] = self.weekplan[day][1] 
     
     def buffSchedule(self):
-        for ss in [1200, 1200, 1200]:
+        for ss in [('12:00','8:00', 7.5), ('12:00','8:00', 7.5), ('12:00','8:00', 7.5)]:
             for day in self.weekplan.keys():
                 self.scheduleworker(ss, day, 0, 7.5, check = '!=')
-        for ss in [300, 300, 300]:
+        for ss in [('3:00','8:00', 5), ('3:00','8:00', 5), ('3:00','8:00', 5)]:
             for day in self.weekplan.keys():
                 self.scheduleworker(ss, day, 0, 5, position = 3, check = '!=')
             
