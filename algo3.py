@@ -11,20 +11,20 @@ class Week():
     
     def __init__(self):
         self.budget  = 415
-        self.computeHours(self.budget)
+        self.computeHours()
         self.setMaxHours()
         self.buildSkeleton()
         self.fillSkeleton()
         #self.fitWeekplan()
         self.buffSchedule()
-        for i in self.weekplan.keys():
-            print(i, self.schedule[i])
+        
     
-    def computeHours(self, weekbudget):
+    def computeHours(self):
         ''' Generate an daily hour budget based on the amount of hours available in a week.
-        Reserves 2 shifts for Saturday and Sunday.'''
+        Reserves 2 shifts for Saturday and sunday.'''
+        self.schedule2 = {}
         self.weekplan = {}
-        self.daybudget = (weekbudget-15)//7
+        self.daybudget = (self.budget-15)//7
         for day in ('sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'):
             if day in ('sunday', 'saturday'):
                 self.weekplan[day] = [self.daybudget + 7.5, 0]
@@ -94,8 +94,19 @@ class Week():
             else: pass
         except KeyError:
             if worker != 'None':
-                self.schedule[day][shift] = worker 
+                self.schedule[day][shift] = worker
             else: pass
+        try:
+            if worker != 'None':
+                self.schedule2[worker].append([day, shift])
+            else:
+                pass
+        except KeyError:
+            if worker != 'None':
+                self.schedule2[worker] = []
+                self.schedule2[worker].append([day, shift])
+            else:
+                pass
         self.updateHours(worker, hoursneeded, day)
         
     def fitWeekplan(self):
@@ -108,7 +119,7 @@ class Week():
         for ss in [1200, 1200, 1200]:
             for day in self.weekplan.keys():
                 self.scheduleworker(ss, day, 0, 7.5, check = '!=')
-        for ss in [1500, 1500, 1500]:
+        for ss in [300, 300, 300]:
             for day in self.weekplan.keys():
                 self.scheduleworker(ss, day, 0, 5, position = 3, check = '!=')
             
@@ -131,7 +142,7 @@ class Week():
                 available = cur.fetchall()  
         try:
             worker = random.choice(available)
-            worker = re.sub('[(),]', '', str(worker))
+            worker = re.sub('[(),\']', '', str(worker))
         except:
             worker = 'None'
         return worker
@@ -139,13 +150,13 @@ class Week():
     def updateHours(self, worker, hoursworked, day):
         ''' Adds hours to employee. Temporarily writes to database.'''
         try:
-            query = 'UPDATE employees SET hours = hours + %s WHERE name = %s' % (hoursworked, worker)
-            cur.execute(query)
-            query = 'UPDATE employees set %s = 0 WHERE name = %s' % (day, worker)
-            cur.execute(query)
-            x = True
-        except:
-            x = False
+            params = (hoursworked, worker)
+            cur.execute('UPDATE employees SET hours = hours + ? WHERE name = ?', params)
+        except ValueError:
+            pass
+   
+        cur.execute('UPDATE employees SET {} = 0 WHERE name = ?'.format(day), (worker,))
+        x = True
             
         if x == True:
             self.weekplan[day][-1] += hoursworked
