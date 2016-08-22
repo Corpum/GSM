@@ -36,17 +36,17 @@ class Week():
         ''' Sets the max hours of every employee. Does not save to database.'''
         fts = []
         pts = []
-        cur.execute('UPDATE employees SET maxhours = 37.5 WHERE position = 0')
-        cur.execute('UPDATE employees SET maxhours = 37.5'
+        cur.execute('UPDATE staff SET maxhours = 37.5 WHERE position = 0')
+        cur.execute('UPDATE staff SET maxhours = 37.5'
                     + ' WHERE position > 0 and position < 3')
-        cur.execute('SELECT name FROM employees WHERE position = 0')
+        cur.execute('SELECT name FROM staff WHERE position = 0')
         for i in cur.fetchall():
             fts.append(40)
-        cur.execute('SELECT name FROM employees WHERE position > 0'
+        cur.execute('SELECT name FROM staff WHERE position > 0'
                     + ' and position < 3')
         for i in cur.fetchall():
             fts.append(37.5)
-        cur.execute('SELECT name FROM employees WHERE position = 2')
+        cur.execute('SELECT name FROM staff WHERE position = 2')
         for i in cur.fetchall():
             pts.append(1)
         pthours = (self.budget - sum(fts)) / len(pts)
@@ -61,7 +61,7 @@ class Week():
         else:
             print('Not enough hours for part-timers')
 
-        cur.execute('UPDATE employees SET maxhours = {pt} WHERE position = 3'.
+        cur.execute('UPDATE staff SET maxhours = {pt} WHERE position = 3'.
                     format(pt=pthours))
 
     def buildSkeleton(self):
@@ -144,11 +144,11 @@ class Week():
                       position='None', check='='):
         '''Runs a query on database and returns a result'''
         if position == 'None':
-            query = (('SELECT name FROM employees where %s = 1'
+            query = (('SELECT name FROM staff where %s = 1'
                      + ' and type %s %s and hours <= maxhours - %s')
                      % (day, check, _type, hoursneeded))
         else:
-            query = (('SELECT name FROM employees WHERE %s = 1'
+            query = (('SELECT name FROM staff WHERE %s = 1'
                      + ' and type %s %s and hours <= maxhours - %s'
                      + ' and position=%s')
                      % (day, check, _type, hoursneeded, position))
@@ -156,13 +156,13 @@ class Week():
         available = cur.fetchall()
         if len(available) == 0:
             if position == 'None':
-                query = (('SELECT name FROM employees where %s = 1'
+                query = (('SELECT name FROM staff where %s = 1'
                          + ' and type %s %s and hours <= maxhours - %s')
                          % (day, check, '3', hoursneeded))
                 cur.execute(query)
                 available = cur.fetchall()
             else:
-                query = (('SELECT name FROM employees WHERE %s = 1'
+                query = (('SELECT name FROM staff WHERE %s = 1'
                          + ' and type %s %s and hours <= maxhours - %s'
                          + ' and position = %s')
                          % (day, check, '3', hoursneeded, position))
@@ -179,12 +179,12 @@ class Week():
         ''' Adds hours to employee. Temporarily writes to database.'''
         try:
             params = (hoursworked, worker)
-            cur.execute(('UPDATE employees'
+            cur.execute(('UPDATE staff'
                         + ' SET hours = hours + ? WHERE name = ?'), params)
         except ValueError:
             pass
 
-        cur.execute(('UPDATE employees SET {} = 0 WHERE name = ?')
+        cur.execute(('UPDATE staff SET {} = 0 WHERE name = ?')
                     .format(day), (worker,))
         x = True
 

@@ -1,5 +1,5 @@
 from openpyxl import load_workbook
-from cleanlist import trans
+from translate import trans
 import sqlite3 as lite
 
 
@@ -12,6 +12,9 @@ class Input():
         self.position = 1
         self.load_doc()
         self.build_dict()
+        self.init_db()
+        self.build_db()
+        self.insert()
 
     def load_doc(self):
         self.wb = load_workbook('template_schedule.xlsx')
@@ -49,30 +52,39 @@ class Input():
                 continue
 
     def init_db(self):
-
-        self.db = lite.connect('employees3.db')
+        ''' Start a database'''
+        self.db = lite.connect('stafflist.db')
         self.cur = self.db.cursor()
 
     def build_db(self):
-
-        self.cur.execute('CREATE TABLE employees ('
+        ''' Create the staff table in database'''
+        self.cur.execute('CREATE TABLE staff ('
                          + 'id INTEGER NOT NULL PRIMARY KEY,'
                          + 'name VARCHAR(25) UNIQUE,'
+                         + 'position INTEGER NOT NULL,'
                          + 'type INTEGER NOT NULL,'
-                         + 'hours FLOAT NOT NULL DEFAULT 0,'
-                         + 'maxhours FLOAT NOT NULL DEFAULT 1,'
-                         + 'sunday INTEGER NOT NULL DEFAULT 1,'
-                         + 'monday INTEGER NOT NULL DEFAULT 1,'
-                         + 'tuesday INTEGER NOT NULL DEFAULT 1,'
-                         + 'wednesday INTEGER NOT NULL DEFAULT 1,'
-                         + 'thursday INTEGER NOT NULL DEFAULT 1,'
-                         + 'friday INTEGER NOT NULL DEFAULT 1,'
-                         + 'satuday INTEGER NOT NULL DEFAULT 1)')
+                         + 'hours FLOAT DEFAULT 0,'
+                         + 'maxhours FLOAT DEFAULT 0,'
+                         + 'sunday INTEGER DEFAULT 1,'
+                         + 'monday INTEGER DEFAULT 1,'
+                         + 'tuesday INTEGER DEFAULT 1,'
+                         + 'wednesday INTEGER DEFAULT 1,'
+                         + 'thursday INTEGER DEFAULT 1,'
+                         + 'friday INTEGER DEFAULT 1,'
+                         + 'satuday INTEGER DEFAULT 1)')
 
     def insert(self):
-
-        pass
-
+        '''Insert the basic values and availability of each employee'''
+        for emp in self.info:
+            self.cur.execute('INSERT INTO staff(id, name, position, type)'
+                             + 'VALUES(?, ?, ?, ?)', tuple(self.info[emp][:4]))
+        for day in ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday',
+                    'friday', 'saturday']:
+            updatelist = [i for i in self.info if day in self.info[i]]
+            for workers in updatelist:
+                    self.cur.execute(('UPDATE staff SET {}=0 WHERE name=?')
+                                     .format(day), (workers,))
+        self.db.commit()
 if __name__ == '__main__':
 
     i = Input()
