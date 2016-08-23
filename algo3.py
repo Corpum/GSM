@@ -2,7 +2,7 @@ import sqlite3 as lite
 import random
 import re
 
-db = lite.connect('employees2.db')
+db = lite.connect('stafflist.db')
 cur = db.cursor()
 week = {}
 

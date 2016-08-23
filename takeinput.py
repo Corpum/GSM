@@ -1,6 +1,7 @@
 from openpyxl import load_workbook
 from translate import trans
 import sqlite3 as lite
+from tkinter.filedialog import askopenfilename
 
 
 class Input():
@@ -17,7 +18,8 @@ class Input():
         self.insert()
 
     def load_doc(self):
-        self.wb = load_workbook('template_schedule.xlsx')
+        filename = askopenfilename()
+        self.wb = load_workbook(filename)
         self.sh = self.wb.get_sheet_by_name('Sheet1')
 
     def build_dict(self):
@@ -71,7 +73,7 @@ class Input():
                          + 'wednesday INTEGER DEFAULT 1,'
                          + 'thursday INTEGER DEFAULT 1,'
                          + 'friday INTEGER DEFAULT 1,'
-                         + 'satuday INTEGER DEFAULT 1)')
+                         + 'saturday INTEGER DEFAULT 1)')
 
     def insert(self):
         '''Insert the basic values and availability of each employee'''

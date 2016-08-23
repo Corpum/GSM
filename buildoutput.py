@@ -1,14 +1,19 @@
 from cleanlist import zap
 from openpyxl import load_workbook
+import tkinter.simpledialog
+import tkinter
 
 
 class Spreadsheet():
     '''Creates an Excel spreadsheet containing information built in algo3'''
     def __init__(self):
+        root = tkinter.Tk()
+        root.withdraw()
         self.createdoc()
         self.writeshifts()
         self.writeoffdays()
-        self.writedate(input('Start date: '))
+        startdate = tkinter.simpledialog.askstring('Start Date', 'Enter Week Begin Date')
+        self.writedate(startdate)
 
     def createdoc(self):
         self.wb = load_workbook('Goodwill_schedule.xlsx')
