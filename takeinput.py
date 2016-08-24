@@ -24,14 +24,19 @@ class Input():
 
     def build_dict(self):
         '''Search the lefthand column for names'''
+        # Search through all names in column, for each name add in info.
         for r in range(1, 50):
             entry = str(self.sh.cell(row=r, column=1).value)
             if entry.isupper():
-                # Find values for ID, position,
+                # Find values for ID, position
                 self.info[entry] = [self.id, entry, self.position]
                 self.id += 1
                 _type = self.sh.cell(row=r, column=6).value
-                if _type == 'F':
+                # Enter in position of each employee based on passed in
+                # variables or lack thereof.
+                if self.position == 1:
+                    self.info[entry].append(0)
+                elif _type == 'F':
                     self.info[entry].append(1)
                 elif _type == 'B':
                     self.info[entry].append(2)

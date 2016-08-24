@@ -24,6 +24,7 @@ class Spreadsheet():
         for r in zap:
             for values in zap[r]:
                 # Writes Shift start time
+                print(r, type(r))
                 self.sh.cell(row=r, column=values[0]).value = str(values[1][0])
                 # Writes shift end time
                 self.sh.cell(row=r, column=values[0]+1).value = str(

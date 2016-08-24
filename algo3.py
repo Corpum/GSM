@@ -50,13 +50,13 @@ class Week():
         for i in cur.fetchall():
             pts.append(1)
         pthours = (self.budget - sum(fts)) / len(pts)
-        if pthours > 22.5:
+        if pthours >= 22.5:
             pthours = 22.5
-        elif pthours > 20:
+        elif pthours >= 20:
             pthours = 20
-        elif pthours > 17.5:
+        elif pthours >= 17.5:
             pthours = 17.5
-        elif pthours > 15:
+        elif pthours >= 15:
             pthours = 15
         else:
             print('Not enough hours for part-timers')
@@ -70,12 +70,15 @@ class Week():
         for day in [i for i in self.weekplan.keys()
                     if self.weekplan[i][-1] <= self.weekplan[i][0] - 7.5]:
             self.schedule[day] = {}
+            # Schedule associates type 1 or 3
             for ms in [('8:45', '4:45', 7.5),
                        ('11:00', '7:00', 7.5),
                        ('1:30', '9:30', 7.5)]:
                 self.scheduleworker(ms, day, 1, 7.5)
+            # Schedule an associate type 2 or 3
             for ms in [('9:15', '5:15', 7.5)]:
                 self.scheduleworker(ms, day, 2, 7.5)
+            # Schedule managers
             for ms in [('8:45', '4:45', 7.5),
                        ('1:30', '9:30', 7.5)]:
                 self.scheduleworker(ms, day, 0, 7.5)
