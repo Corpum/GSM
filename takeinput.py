@@ -19,6 +19,9 @@ class Input():
 
     def load_doc(self):
         filename = askopenfilename()
+        with open('templatename.txt', 'a') as out:
+            out.write(filename)
+            out.close()
         self.wb = load_workbook(filename)
         self.sh = self.wb.get_sheet_by_name('Sheet1')
 

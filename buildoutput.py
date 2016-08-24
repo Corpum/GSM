@@ -12,11 +12,14 @@ class Spreadsheet():
         self.createdoc()
         self.writeshifts()
         self.writeoffdays()
-        startdate = tkinter.simpledialog.askstring('Start Date', 'Enter Week Begin Date')
+        startdate = tkinter.simpledialog.askstring('Start Date',
+                                                   'Enter Week Begin Date')
         self.writedate(startdate)
 
     def createdoc(self):
-        self.wb = load_workbook('Goodwill_schedule.xlsx')
+        with open('templatename.txt', 'r') as txt:
+            filename = txt.read().split('/')[-1]
+        self.wb = load_workbook(filename)
         self.sh = self.wb.get_sheet_by_name('Sheet1')
 
     def writeshifts(self):
@@ -36,7 +39,7 @@ class Spreadsheet():
         ''' Adds in OFF days'''
         for j in range(8, 50):
             for i in range(4, 29, 3):
-                if self.sh.cell(row=j, column=i).value == 'X':
+                if self.sh.cell(row=j, column=i).value in ('X', '#'):
                     self.sh.cell(row=j, column=i).value = 'OFF'
                     self.sh.cell(row=j, column=i + 1).value = ''
                     self.sh.cell(row=j, column=i + 2).value = 0
