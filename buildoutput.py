@@ -1,31 +1,23 @@
-from cleanlist import zap
 from openpyxl import load_workbook
-import tkinter.simpledialog
-import tkinter
 
 
 class Spreadsheet():
     '''Creates an Excel spreadsheet containing information built in algo3'''
-    def __init__(self):
-        root = tkinter.Tk()
-        root.withdraw()
+    def __init__(self, filename, startdate, tbwschedule):
+        self.filename = filename
         self.createdoc()
-        self.writeshifts()
+        self.writeshifts(tbwschedule)
         self.writeoffdays()
-        startdate = tkinter.simpledialog.askstring('Start Date',
-                                                   'Enter Week Begin Date')
         self.writedate(startdate)
 
     def createdoc(self):
-        with open('templatename.txt', 'r') as txt:
-            filename = txt.read().split('/')[-1]
-        self.wb = load_workbook(filename)
+        self.wb = load_workbook(self.filename)
         self.sh = self.wb.get_sheet_by_name('Sheet1')
 
-    def writeshifts(self):
+    def writeshifts(self, tbwschedule):
         '''Writes information from Week() to Excel sheet'''
-        for r in zap:
-            for values in zap[r]:
+        for r in tbwschedule:
+            for values in tbwschedule[r]:
                 # Writes Shift start time
                 self.sh.cell(row=r, column=values[0]).value = str(values[1][0])
                 # Writes shift end time

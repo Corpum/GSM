@@ -1,27 +1,22 @@
 from openpyxl import load_workbook
 from translate import trans
 import sqlite3 as lite
-from tkinter.filedialog import askopenfilename
 
 
 class Input():
 
-    def __init__(self):
+    def __init__(self, filename):
         self.trans2 = {v: k for k, v in trans.items()}
         self.info = {}
         self.id = 1
         self.position = 1
-        self.load_doc()
+        self.load_doc(filename)
         self.build_dict()
         self.init_db()
         self.build_db()
         self.insert()
 
-    def load_doc(self):
-        filename = askopenfilename()
-        with open('templatename.txt', 'a') as out:
-            out.write(filename)
-            out.close()
+    def load_doc(self, filename):
         self.wb = load_workbook(filename)
         self.sh = self.wb.get_sheet_by_name('Sheet1')
 

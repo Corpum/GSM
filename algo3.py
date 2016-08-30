@@ -2,14 +2,13 @@ import sqlite3 as lite
 import random
 import re
 
-db = lite.connect('stafflist.db')
-cur = db.cursor()
-week = {}
-
 
 class Week():
     '''Create a schedule for Sunday - Monday'''
     def __init__(self):
+        self.week = {}
+        self.db = lite.connect('stafflist.db')
+        self.cur = self.db.cursor()
         self.budget = 415
         self.computeHours()
         self.setMaxHours()
@@ -36,18 +35,18 @@ class Week():
         ''' Sets the max hours of every employee. Does not save to database.'''
         fts = []
         pts = []
-        cur.execute('UPDATE staff SET maxhours = 37.5 WHERE position = 0')
-        cur.execute('UPDATE staff SET maxhours = 37.5'
-                    + ' WHERE position > 0 and position < 3')
-        cur.execute('SELECT name FROM staff WHERE position = 0')
-        for i in cur.fetchall():
+        self.cur.execute('UPDATE staff SET maxhours = 37.5 WHERE position = 0')
+        self.cur.execute('UPDATE staff SET maxhours = 37.5'
+                         + ' WHERE position > 0 and position < 3')
+        self.cur.execute('SELECT name FROM staff WHERE position = 0')
+        for i in self.cur.fetchall():
             fts.append(40)
-        cur.execute('SELECT name FROM staff WHERE position > 0'
-                    + ' and position < 3')
-        for i in cur.fetchall():
+        self.cur.execute('SELECT name FROM staff WHERE position > 0'
+                         + ' and position < 3')
+        for i in self.cur.fetchall():
             fts.append(37.5)
-        cur.execute('SELECT name FROM staff WHERE position = 2')
-        for i in cur.fetchall():
+        self.cur.execute('SELECT name FROM staff WHERE position = 2')
+        for i in self.cur.fetchall():
             pts.append(1)
         pthours = (self.budget - sum(fts)) / len(pts)
         if pthours >= 22.5:
@@ -61,8 +60,8 @@ class Week():
         else:
             print('Not enough hours for part-timers')
 
-        cur.execute('UPDATE staff SET maxhours = {pt} WHERE position = 3'.
-                    format(pt=pthours))
+        self.cur.execute('UPDATE staff SET maxhours = {pt} WHERE position = 3'.
+                         format(pt=pthours))
 
     def buildSkeleton(self):
         ''' Fills in fundamental shifts'''
@@ -155,22 +154,22 @@ class Week():
                      + ' and type %s %s and hours <= maxhours - %s'
                      + ' and position=%s')
                      % (day, check, _type, hoursneeded, position))
-        cur.execute(query)
-        available = cur.fetchall()
+        self.cur.execute(query)
+        available = self.cur.fetchall()
         if len(available) == 0:
             if position == 'None':
                 query = (('SELECT name FROM staff where %s = 1'
                          + ' and type %s %s and hours <= maxhours - %s')
                          % (day, check, '3', hoursneeded))
-                cur.execute(query)
-                available = cur.fetchall()
+                self.cur.execute(query)
+                available = self.cur.fetchall()
             else:
                 query = (('SELECT name FROM staff WHERE %s = 1'
                          + ' and type %s %s and hours <= maxhours - %s'
                          + ' and position = %s')
                          % (day, check, '3', hoursneeded, position))
-                cur.execute(query)
-                available = cur.fetchall()
+                self.cur.execute(query)
+                available = self.cur.fetchall()
         try:
             worker = random.choice(available)
             worker = re.sub('[(),\']', '', str(worker))
@@ -182,13 +181,13 @@ class Week():
         ''' Adds hours to employee. Temporarily writes to database.'''
         try:
             params = (hoursworked, worker)
-            cur.execute(('UPDATE staff'
-                        + ' SET hours = hours + ? WHERE name = ?'), params)
+            self.cur.execute(('UPDATE staff'
+                              + ' SET hours = hours + ? WHERE name = ?'), params)
         except ValueError:
             pass
 
-        cur.execute(('UPDATE staff SET {} = 0 WHERE name = ?')
-                    .format(day), (worker,))
+        self.cur.execute(('UPDATE staff SET {} = 0 WHERE name = ?')
+                         .format(day), (worker,))
         x = True
 
         if x:
