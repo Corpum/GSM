@@ -6,7 +6,7 @@ import os
 
 
 folder = '/home/kyle/Dropbox/lrn/flask/uploads'
-
+startdate = '8/21/16'
 
 def find_file(path):
 
@@ -16,7 +16,6 @@ def find_file(path):
 
 
 orig_xl = find_file(folder)
-startdate = '8/28/16'
 
 
 def create_schedule():

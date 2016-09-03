@@ -35,13 +35,14 @@ class Week():
         ''' Sets the max hours of every employee. Does not save to database.'''
         fts = []
         pts = []
-        self.cur.execute('UPDATE staff SET maxhours = 37.5 WHERE position = 0')
+        # Set max hours for managers
+        self.cur.execute('UPDATE staff SET maxhours = 40 WHERE position <= 1')
         self.cur.execute('UPDATE staff SET maxhours = 37.5'
-                         + ' WHERE position > 0 and position < 3')
-        self.cur.execute('SELECT name FROM staff WHERE position = 0')
+                         + ' WHERE position > 1 and position < 3')
+        self.cur.execute('SELECT name FROM staff WHERE position <= 1')
         for i in self.cur.fetchall():
             fts.append(40)
-        self.cur.execute('SELECT name FROM staff WHERE position > 0'
+        self.cur.execute('SELECT name FROM staff WHERE position > 1'
                          + ' and position < 3')
         for i in self.cur.fetchall():
             fts.append(37.5)
@@ -51,12 +52,12 @@ class Week():
         pthours = (self.budget - sum(fts)) / len(pts)
         if pthours >= 22.5:
             pthours = 22.5
-        elif pthours >= 20:
-            pthours = 20
-        elif pthours >= 17.5:
-            pthours = 17.5
-        elif pthours >= 15:
-            pthours = 15
+        elif pthours >= 19:
+            pthours = 19
+        elif pthours >= 15.5:
+            pthours = 15.5
+        elif pthours >= 12:
+            pthours = 12
         else:
             print('Not enough hours for part-timers')
 
@@ -78,9 +79,9 @@ class Week():
             for ms in [('9:15', '5:15', 7.5)]:
                 self.scheduleworker(ms, day, 2, 7.5)
             # Schedule managers
-            for ms in [('8:45', '4:45', 7.5),
-                       ('1:30', '9:30', 7.5)]:
-                self.scheduleworker(ms, day, 0, 7.5)
+            for ms in [('8:45', '5:15', 8),
+                       ('1:00', '9:30', 8)]:
+                self.scheduleworker(ms, day, 0, 8)
 
     def fillSkeleton(self):
         ''' Fills up the rest of a schedule'''
@@ -88,11 +89,13 @@ class Week():
                    ('11:00', '7:00', 7.5)]:
             for day in [i for i in self.weekplan.keys()
                         if self.weekplan[i][-1] <= self.weekplan[i][0] - 7.5]:
-                self.scheduleworker(ss, day, 0, 7.5, check='!=')
-        for ss in [('16:30', '9:30', 5), ('11:00', '4:00', 5)]:
+                for _type in [1, 2]:
+                    self.scheduleworker(ss, day, _type, 7.5)
+        for ss in [('17:30', '9:30', 4), ('11:00', '3:00', 4)]:
             for day in [i for i in self.weekplan.keys()
                         if self.weekplan[i][-1] <= self.weekplan[i][0] - 5]:
-                self.scheduleworker(ss, day, 0, 5, position=3, check='!=')
+                for _type in [1, 2]:
+                    self.scheduleworker(ss, day, _type, 4, position=3)
 
     def scheduleworker(self, shift, day, _type,
                        hoursneeded, position='None', check='='):
@@ -135,12 +138,17 @@ class Week():
                    ('12:00', '8:00', 7.5),
                    ('12:00', '8:00', 7.5)]:
             for day in self.weekplan.keys():
-                self.scheduleworker(ss, day, 0, 7.5, check='!=')
-        for ss in [('3:00', '8:00', 5),
-                   ('3:00', '8:00', 5),
-                   ('3:00', '8:00', 5)]:
+                for _type in [1, 2]:
+                    self.scheduleworker(ss, day, _type, 7.5)
+        for ss in [('3:00', '7:00', 4),
+                   ('3:00', '7:00', 4),
+                   ('3:00', '7:00', 4)]:
             for day in self.weekplan.keys():
-                self.scheduleworker(ss, day, 0, 5, position=3, check='!=')
+                for _type in [1, 2]:
+                    self.scheduleworker(ss, day, _type, 4, position=3)
+        for ss in [('10:30', '7:00', 8)]:
+            for day in self.weekplan.keys():
+                self.scheduleworker(ss, day, 0, 8)
 
     def queryDatabase(self, day, _type, hoursneeded=7.5,
                       position='None', check='='):
