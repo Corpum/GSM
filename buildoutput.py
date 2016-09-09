@@ -3,7 +3,8 @@ from openpyxl import load_workbook
 
 class Spreadsheet():
     '''Creates an Excel spreadsheet containing information built in algo3'''
-    def __init__(self, filename, startdate, tbwschedule):
+    def __init__(self, filename, startdate, tbwschedule, folder):
+        self.folder = folder
         self.filename = filename
         self.createdoc()
         self.writeshifts(tbwschedule)
@@ -38,7 +39,7 @@ class Spreadsheet():
     def writedate(self, date):
         ''' Writes the beginning of week date to Excel'''
         self.sh.cell(row=4, column=4).value = date
-        self.wb.save('updated_sched3.xlsx')
+        self.wb.save(self.folder + '/updated_sched3.xlsx')
 
 if __name__ == '__main__':
 
